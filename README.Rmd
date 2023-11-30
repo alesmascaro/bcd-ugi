@@ -17,11 +17,11 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 
-This directory contains the `R` code to implement the methodology presented in the paper *Bayesian causal discovery from unknown general interventions*, which will be soon made available as an ArXiv. 
+This repository contains the `R` code to implement the methodology presented in the paper *Bayesian causal discovery from unknown general interventions*, which will be soon made available as an ArXiv. 
 
-In particular, the script `learn_DTP.R` contains a function implementing Algorithm $5$ of the same paper. The sub-directory `Auxiliary functions` contains a plethora of internal functions.
+In particular, the script `learn_DTP.R` contains a function implementing Algorithm $5$ of the same paper. The sub-directory `Auxiliary functions` contains all the associated internal functions.
 
-In what follows, we illustrate the usage of `learn_DTP` through an example. To replicate this example, clone the repository, set it as working directory and run the script `Example.R`. 
+In what follows, we illustrate the usage of `learn_DTP` through an example. To reproduce this example, clone the repository, set it as working directory and run the script `Example.R`. 
 
 Sometime in the future, this code will be re-organised as an `R` package with proper documentation. 
 
@@ -97,7 +97,7 @@ We first set the hyperparameters of the prior distributions to make them as weak
 
 ```{r}
   ## Parameter prior
-DW_a <- q-1+1/n
+DW_a <- q-1+1/(2*n)
 DW_U <- diag(1,q)
   ## Induced parents prior
 a_phi = b_phi = 1
@@ -107,21 +107,32 @@ a_eta = b_eta = 1
 a_pi = b_pi = 1
 ```
 
-We can then run our MCMC to obtain a posterior sample of size `S = 5000`, after discarding the first `burn = 2000` observations. We set the starting point to be the empty DAG. 
+We can then run our MCMC to obtain a posterior sample of size `S = 30000`, after discarding the first `burn = 20000` observations. `fast = FALSE` means that the proposal ratio is computed exactly and not approximated to 1. We set the starting point to be the empty DAG. 
 
 ```{r}
-S = 5000
-burn = 2000
+S = 30000
+burn = 20000
 initial_DAG <- matrix(0,q,q)
+set.seed(1)
 out <- learn_DTP(S, burn, data, initial_DAG, 
-                 DW_a, DW_U, a_phi, b_phi, a_eta, b_eta, a_pi, b_pi, fast = TRUE)
+                 DW_a, DW_U, a_phi, b_phi, a_eta, b_eta, a_pi, b_pi, fast = FALSE)
 ```
 
 We can then have a look at the output. 
 
 ```{r out.width="30%"}
-round(apply(out$DAGs, c(1,2), mean), 1)
+round(apply(out$DAGs, c(1,2), mean), 2)
 round(apply(out$TARGETs, c(1,2), mean), 1)
 round(apply(out$PARENTs[[2]], c(1,2), mean), 1)
 ```
 
+`learn_DTP()` is correctly identifying both the target node and the induced parent-set. As for the DAG, we can consider the Median Probability DAG estimate:
+
+```{r out.width="60%"}
+MPM_DAG <- round(apply(out$DAGs, c(1,2), mean))
+par(mfrow = c(1,2))
+gRbase::plot(as(MPM_DAG, "graphNEL"))
+gRbase::plot(as(DAG1, "graphNEL"))
+```
+
+The Median Probability DAG corresponds to the true one. Notice that the posterior probabilities of edge inclusion reflect the fact that the direction of some of these edges are not identifiable from data. 
