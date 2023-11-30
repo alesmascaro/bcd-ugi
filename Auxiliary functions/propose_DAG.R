@@ -64,11 +64,6 @@ propose_DAG <- function(currentDAG, currentTARGETS, currentPARENTS, fast) {
         possibleDAG <- operation(rd_set[i,1], A, rd_set[i,2:3])
         modifiedDAGs <- get_modifiedDAGs(possibleDAG, currentTARGETS, currentPARENTS)
         is_rd_valid[i] <- as.logical(prod(sapply(1:length(modifiedDAGs), function(k) gRbase::is.DAG(modifiedDAGs[[k]]))))
-        if (max_indegree != FALSE) {
-          max_pa <- max(colSums(possibleDAG))
-          indegree_ok <- max_pa <= max_indegree
-        }
-        is_rd_valid[i] <- as.logical(is_rd_valid[i]*indegree_ok)
       }
       rd_set <- rd_set[is_rd_valid,]
     }
