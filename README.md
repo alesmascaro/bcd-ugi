@@ -7,11 +7,11 @@
 <!-- badges: end -->
 
 This repository contains the `R` code to implement the methodology
-presented in the paper *Bayesian causal discovery from unknown general
-interventions*, which will be soon made available as an ArXiv.
+presented in the paper [Bayesian causal discovery from unknown general
+interventions](https://arxiv.org/abs/2312.00509).
 
 In particular, the script `learn_DTP.R` contains a function implementing
-Algorithm $5$ of the same paper. The sub-directory `Auxiliary functions`
+Algorithm $1$ of the same paper. The sub-directory `Auxiliary functions`
 contains all the associated internal functions.
 
 In what follows, we illustrate the usage of `learn_DTP` through an
@@ -19,7 +19,16 @@ example. To reproduce this example, clone the repository, set it as
 working directory and run the script `Example.R`.
 
 Sometime in the future, this code will be re-organised as an `R` package
-with proper documentation.
+with proper documentation and auto-import of package dependencies. In
+the meanwhile, you should manually install the packages `gRbase` (for
+the implementation) and `graph` and `Rgraphviz` (to run this example):
+
+``` r
+install.packages("gRbase")
+install.packages("BiocManager")
+BiocManager::install("graph")
+BiocManager::install("Rgraphviz")
+```
 
 ## Example
 
@@ -43,10 +52,11 @@ DAG1[lower.tri(DAG1)] <- sample(c(0,1), q*(q-1)/2, T, prob = c(1-w, w))
 The resulting DAG is shown in the following figure.
 
 ``` r
-gRbase::plot(as(DAG1, "graphNEL"))
+  ## as_graphNEL defined in Auxiliary functions
+Rgraphviz::plot(as_graphNEL(DAG1))
 ```
 
-<img src="README_files/figure-gfm/unnamed-chunk-3-1.png" width="30%" />
+<img src="README_files/figure-gfm/unnamed-chunk-5-1.png" width="30%" />
 
 Then, we generate the Cholesky parameters of the Gaussian DAG-model and
 obtain the corresponding covariance matrix.
@@ -65,10 +75,10 @@ target node $4$, adding the edges $2 \to 4$ and $6 \to 4$.
 ``` r
 DAG2 <- DAG1
 DAG2[2,4] <- DAG2[6,4] <- 1
-gRbase::plot(as(DAG2, "graphNEL"))
+Rgraphviz::plot(as_graphNEL(DAG2))
 ```
 
-<img src="README_files/figure-gfm/unnamed-chunk-5-1.png" width="30%" />
+<img src="README_files/figure-gfm/unnamed-chunk-7-1.png" width="30%" />
 
 The associated parameters are the same as before, except for the new
 parents of the intervened node.
@@ -164,11 +174,11 @@ Probability DAG estimate:
 ``` r
 MPM_DAG <- round(apply(out$DAGs, c(1,2), mean))
 par(mfrow = c(1,2))
-gRbase::plot(as(MPM_DAG, "graphNEL"))
-gRbase::plot(as(DAG1, "graphNEL"))
+Rgraphviz::plot(as_graphNEL(MPM_DAG))
+Rgraphviz::plot(as_graphNEL(DAG1))
 ```
 
-<img src="README_files/figure-gfm/unnamed-chunk-12-1.png" width="60%" />
+<img src="README_files/figure-gfm/unnamed-chunk-13-1.png" width="60%" />
 
 The Median Probability DAG corresponds to the true one. Notice that the
 posterior probabilities of edge inclusion reflect the fact that the
