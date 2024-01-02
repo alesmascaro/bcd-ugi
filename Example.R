@@ -1,20 +1,22 @@
-We first randomly generate a DAG `DAG1` with $q = 10$ nodes and probability of edge inclusion $\omega = 0.2$.
+  ## Source necessary files and packages
+files.sources <- list.files(path=paste0(getwd(), "/Auxiliary functions") ,full.names = TRUE)
+sapply(files.sources, source)
+source(paste0(getwd(), "/learn_DTP.R"))
 
-```{r}
+# install.packages("gRbase")
+# install.packages("BiocManager")
+# BiocManager::install("graph")
+# BiocManager::install("Rgraphviz")
+
+# Generate DAG ------------------------------------------------------------
+
 q <- 10
 w <- 0.2
 DAG1 <- matrix(0,q,q)
 set.seed(1)
 DAG1[lower.tri(DAG1)] <- sample(c(0,1), q*(q-1)/2, T, prob = c(1-w, w))
-```
 
-The resulting DAG is shown in the following figure.
-
-```{r out.width="30%"}
-gRbase::plot(as(DAG1, "graphNEL"))
-```
-
-Then, we generate the Cholesky parameters of the Gaussian DAG-model and obtain the corresponding covariance matrix.
+Rgraphviz::plot(as_graphNEL(DAG1))
 
 # Generate DAG and DAG parameters -----------------------------------------
 
@@ -26,7 +28,7 @@ Sigma1 <- crossprod(solve(L1))
 
 DAG2 <- DAG1
 DAG2[2,4] <- DAG2[6,4] <- 1
-gRbase::plot(as(DAG2, "graphNEL"))
+Rgraphviz::plot(as_graphNEL(DAG2))
 
 L2 <- L1
 set.seed(2)
@@ -44,11 +46,6 @@ X2 <- mvtnorm::rmvnorm(n, sigma = Sigma2)
 data <- list(X1, X2)
 
 # Use learn_DTP -----------------------------------------------------------
-
-  ## Source necessary files
-files.sources <- list.files(path=paste0(getwd(), "/Auxiliary functions") ,full.names = TRUE)
-sapply(files.sources, source)
-source(paste0(getwd(), "/learn_DTP.R"))
 
   ## Specify prior hyperparams
     ### Parameter prior
@@ -78,6 +75,6 @@ round(apply(out$PARENTs[[2]], c(1,2), mean), 1)
 
 MPM_DAG <- round(apply(out$DAGs, c(1,2), mean))
 par(mfrow = c(1,2))
-gRbase::plot(as(MPM_DAG, "graphNEL"))
-gRbase::plot(as(DAG1, "graphNEL"))
+Rgraphviz::plot(as_graphNEL(MPM_DAG))
+Rgraphviz::plot(as_graphNEL(DAG1))
 
